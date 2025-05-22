@@ -62,8 +62,9 @@ const Note = ({ note }: { note: NoteType }) => {
             marginBottom: 10,
           }}
         >
-          {note.topic?.map((topic) => (
+          {note.topic?.map((topic, index) => (
             <View
+              key={index}
               style={{
                 backgroundColor: colors.tertiary,
                 padding: 12,

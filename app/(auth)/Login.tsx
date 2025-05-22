@@ -9,8 +9,38 @@ import {
 } from "react-native";
 import React from "react";
 import colors from "../../data/styling/colors";
-
+import { useState, useContext } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/api/auth";
+import { router } from "expo-router";
+import AuthContext from "@/context/AuthContext";
+import { storeToken } from "@/api/Storage";
 const Index = () => {
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { mutate, data } = useMutation({
+    mutationKey: ["login"],
+    mutationFn: () => login({ email, password }),
+    onSuccess: async (response) => {
+      if (response?.token) {
+        await storeToken(response.token);
+      }
+      setIsAuthenticated(true);
+      router.replace("/");
+    },
+  });
+  console.log("token: ", data);
+
+  const handelLogin = () => {
+    // Check if email and password are not empty
+    // If empty, show alert
+    if (email === "" || password === "") {
+      alert("Please fill all fields");
+    }
+    mutate();
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -38,6 +68,9 @@ const Index = () => {
               marginTop: 20,
             }}
             placeholder="Email"
+            onChangeText={(text) => {
+              setEmail(text);
+            }}
           />
 
           <TextInput
@@ -48,6 +81,10 @@ const Index = () => {
               marginTop: 20,
             }}
             placeholder="Password"
+            secureTextEntry={true}
+            onChangeText={(text) => {
+              setPassword(text);
+            }}
           />
 
           <TouchableOpacity
@@ -58,7 +95,7 @@ const Index = () => {
               marginTop: 20,
               alignItems: "center",
             }}
-            onPress={() => {}}
+            onPress={() => handelLogin()}
           >
             <Text
               style={{
